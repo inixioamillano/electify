@@ -19,14 +19,21 @@ export class HomePage implements AfterViewInit, OnInit {
   @ViewChild('congresoCanvas') private congresoCanvas?: ElementRef;
   congresoChart: any;
   artists: any[] = [];
-  constructor(private spotify: SpotifyService, private route: ActivatedRoute) {}
+  constructor(private spotify: SpotifyService, private route: ActivatedRoute, private router: Router) {}
   ngOnInit(): void {
-    this.route.fragment.pipe(
-      take(1)
-    )
-    .subscribe(fragment => {
-      this.spotifyToken = new URLSearchParams(fragment || '').get('access_token');
-    })
+    const localToken = localStorage.getItem('electify-token');
+    if (localToken) {
+      this.spotifyToken = localToken;
+    } else {
+      this.route.fragment.pipe(
+        take(1)
+      )
+      .subscribe(fragment => {
+        const spotifyToken = new URLSearchParams(fragment || '').get('access_token');
+        localStorage.setItem('electify-token', spotifyToken || '');
+        this.router.navigate(['']);
+      })
+    }
   }
   ngAfterViewInit(): void {
     if (this.spotifyToken) {
